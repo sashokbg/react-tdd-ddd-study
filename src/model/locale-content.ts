@@ -38,14 +38,14 @@ export class LocaleContent {
     const existingBlock = this.getBlock(chunk.name);
 
     if (!existingBlock) {
-      this._blocks.value.push(
+      this._blocks.value = [...this._blocks.value,
         new Block(
           chunk.name,
           chunk.level,
           chunk.display_title,
           chunk.is_content_display_title,
         ),
-      );
+      ];
     }
   }
 
@@ -73,6 +73,7 @@ export class LocaleContent {
       const existingBlock = this._blocks.value[i];
       if (existingBlock.name === block_name) {
         this._blocks.value[i] = existingBlock.freshNewInstance();
+        this._blocks.value = [...this._blocks.value]
       }
     }
   }

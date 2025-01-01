@@ -3,7 +3,6 @@ import {LocaleEnum} from "@/model/locale.enum";
 import React, {useRef} from "react";
 import {BlockComponent} from "@/shared/block";
 import styles from '../styles/Home.module.css'
-import 'preact/debug';
 import {effect} from "@preact/signals-react";
 
 
@@ -14,6 +13,39 @@ const description = new DescriptionModel("123", () => {
 export default function Home() {
   const isLoading = description.isLoading.value
   const formRef = useRef<HTMLFormElement>(null)
+
+  // setTimeout(() => {
+  //   description.addStartChunk({
+  //     name: 'title',
+  //     display_title: "Title",
+  //     level: 0,
+  //     is_content_display_title: false,
+  //     locale: LocaleEnum.en_US,
+  //   })
+  //
+  //   description.addStartChunk({
+  //     name: 'short_description',
+  //     display_title: "Short Description",
+  //     level: 0,
+  //     is_content_display_title: false,
+  //     locale: LocaleEnum.en_US,
+  //   })
+
+    // setInterval(() => {
+      // description.addChunk({
+      //   block_name: "title",
+      //   locale: LocaleEnum.en_US,
+      //   chunk: "LALA "
+      // })
+      //
+      // description.addChunk({
+      //   block_name: "short_description",
+      //   locale: LocaleEnum.en_US,
+      //   chunk: "LOLO "
+      // })
+    // }, 1000)
+  // }, 2000)
+
 
   const addBlock = () => {
     if (formRef.current) {
@@ -34,7 +66,7 @@ export default function Home() {
       let formData = new FormData(formRef.current)
 
       description.addChunk({
-        block_name: "title",
+        block_name: formData.get('block_title') as string,
         locale: formData.get('locale') as LocaleEnum,
         chunk: formData.get('chunk_content') as string
       })
@@ -50,7 +82,7 @@ export default function Home() {
   }
 
   effect(() => {
-    console.log("TEST", description.getCurrentLocaleContent().value)
+    console.log("TEST", description.getCurrentLocaleContent().value?.blocks.value)
   })
 
   return (
