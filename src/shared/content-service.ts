@@ -1,6 +1,6 @@
 import {DescriptionModel} from "@/model/description-model";
 
-export const fakeContent = (description: DescriptionModel) => {
+export const generateFakeContent = (description: DescriptionModel) => {
 
   description.addStartChunk({
     name: 'title',

@@ -3,7 +3,7 @@ import {LocaleEnum} from "@/model/locale.enum";
 import React, {useRef} from "react";
 import {BlockComponent} from "@/shared/block";
 import styles from '../styles/Home.module.css'
-import {fakeContent} from "@/shared/content-service";
+import {generateFakeContent} from "@/shared/content-service";
 
 
 const description = new DescriptionModel()
@@ -13,11 +13,10 @@ description.callback = (run_id: string, locale: LocaleEnum, block_name: string) 
 }
 
 export default function Home() {
-  const isLoading = description.isLoading.value
   const formRef = useRef<HTMLFormElement>(null)
 
   const generateContent = () => {
-    fakeContent(description)
+    generateFakeContent(description)
   }
 
   const changeLocale = () => {
@@ -29,27 +28,25 @@ export default function Home() {
   }
 
   return (
-    <>
-      <div className={styles.container}>
-        <div className={styles.content}>
-          <div>Content is loading: {isLoading ? 'True' : 'False'}</div>
+    <div className={styles.container}>
+      <div className={styles.content}>
+        <div>Content is loading: {description.isLoading.value ? 'True' : 'False'}</div>
 
-          {description.getCurrentLocaleContent().value?.blocks.value.map((block) => {
-            return (<BlockComponent key={block.name} block={block}/>)
-          })}
+        {description.getCurrentLocaleContent().value?.blocks.value.map((block) => {
+          return (<BlockComponent key={block.name} block={block}/>)
+        })}
 
-          <form ref={formRef}>
-            <label htmlFor='locale'>Language</label>
-            <select name={'locale'} onChange={changeLocale} id='locale'>
-              <option>en_US</option>
-              <option>fr_FR</option>
-              <option>en_UK</option>
-            </select>
-          </form>
+        <form ref={formRef}>
+          <label htmlFor='locale'>Language</label>
+          <select name={'locale'} onChange={changeLocale} id='locale'>
+            <option>en_US</option>
+            <option>fr_FR</option>
+            <option>en_UK</option>
+          </select>
+        </form>
 
-          <button onClick={generateContent}>Generate Content</button>
-        </div>
+        <button onClick={generateContent}>Generate Content</button>
       </div>
-    </>
+    </div>
   );
 }
