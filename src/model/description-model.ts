@@ -23,7 +23,7 @@ export class DescriptionModel {
   isLoading = signal(false);
   callback: any;
 
-  constructor(callback = undefined) {
+  constructor(callback: any = undefined) {
     this._languages = [LocaleEnum.en_US, LocaleEnum.fr_FR, LocaleEnum.en_UK];
     this._currentLocale = signal(LocaleEnum.en_US);
     this._localeContents = signal([]);

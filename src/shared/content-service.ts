@@ -1,4 +1,3 @@
-import {LocaleEnum} from "@/model/locale.enum";
 import {DescriptionModel} from "@/model/description-model";
 
 export const fakeContent = (description: DescriptionModel) => {
