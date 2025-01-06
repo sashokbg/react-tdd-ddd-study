@@ -1,5 +1,5 @@
-import {BlockLevel} from "@/model/block-level.type";
-import {signal} from "@preact/signals-react";
+import { BlockLevel } from '@/model/block-level.type';
+import { signal } from '@preact/signals-react';
 
 export class Block {
   private readonly _name: string;
@@ -13,11 +13,15 @@ export class Block {
     level: BlockLevel,
     displayTitle: string,
     isContentDisplayTitle: boolean,
+    content: string | undefined = undefined,
   ) {
     this._name = name;
     this._level = level;
     this._displayTitle = displayTitle;
     this._isContentDisplayTitle = isContentDisplayTitle;
+    if (content) {
+      this._content.value = content;
+    }
   }
 
   get level(): BlockLevel {

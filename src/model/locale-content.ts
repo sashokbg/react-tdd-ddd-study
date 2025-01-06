@@ -1,19 +1,28 @@
-import {LocaleEnum} from '@/model/locale.enum';
-import {Block} from '@/model/block';
-import {BlockStartChunk} from '@/model/block-start-chunk';
-import {BlockChunk} from '@/model/block-chunk';
-import {BlockNotFoundError} from '@/model/errors/block-not-found.error';
-import {LocaleMismatchError} from '@/model/errors/locale-mismatch.error';
-import {signal, Signal} from "@preact/signals-react";
+import { LocaleEnum } from '@/model/locale.enum';
+import { Block } from '@/model/block';
+import { BlockStartChunk } from '@/model/block-start-chunk';
+import { BlockChunk } from '@/model/block-chunk';
+import { BlockNotFoundError } from '@/model/errors/block-not-found.error';
+import { LocaleMismatchError } from '@/model/errors/locale-mismatch.error';
+import { signal, Signal } from '@preact/signals-react';
 
 export class LocaleContent {
   private readonly _locale: LocaleEnum;
   private readonly _blocks: Signal<Block[]>;
 
-
   constructor(locale: LocaleEnum) {
     this._locale = locale;
     this._blocks = signal([]);
+  }
+
+  getContent(): string {
+    let content = '';
+
+    for (const block of this.blocks.value) {
+      content += block.content.value + '\n';
+    }
+
+    return content;
   }
 
   get locale() {
@@ -38,7 +47,8 @@ export class LocaleContent {
     const existingBlock = this.getBlock(chunk.name);
 
     if (!existingBlock) {
-      this._blocks.value = [...this._blocks.value,
+      this._blocks.value = [
+        ...this._blocks.value,
         new Block(
           chunk.name,
           chunk.level,
@@ -73,7 +83,7 @@ export class LocaleContent {
       const existingBlock = this._blocks.value[i];
       if (existingBlock.name === block_name) {
         this._blocks.value[i] = existingBlock.freshNewInstance();
-        this._blocks.value = [...this._blocks.value]
+        this._blocks.value = [...this._blocks.value];
       }
     }
   }

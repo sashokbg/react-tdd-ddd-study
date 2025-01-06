@@ -1,36 +1,42 @@
-'use client'
+'use client';
 
-import {BlockStartChunk} from '@/model/block-start-chunk';
-import {BlockChunk} from '@/model/block-chunk';
-import {LocaleEnum} from '@/model/locale.enum';
-import {LocaleContent} from '@/model/locale-content';
-import {TranslationError} from '@/model/errors/translation.error';
-import {BlockNotFoundError} from '@/model/errors/block-not-found.error';
-import {computed, ReadonlySignal, Signal, signal} from "@preact/signals-react";
+import { BlockStartChunk } from '@/model/block-start-chunk';
+import { BlockChunk } from '@/model/block-chunk';
+import { LocaleEnum } from '@/model/locale.enum';
+import { LocaleContent } from '@/model/locale-content';
+import { TranslationError } from '@/model/errors/translation.error';
+import { BlockNotFoundError } from '@/model/errors/block-not-found.error';
+import {
+  computed,
+  ReadonlySignal,
+  Signal,
+  signal,
+} from '@preact/signals-react';
+import { Block } from '@/model/block';
 
 export class DescriptionModel {
   private readonly _languages: LocaleEnum[];
   private readonly _localeContents: Signal<LocaleContent[]>;
-  private _currentLocale: Signal<LocaleEnum>;
-  private readonly startTranslationCallback: any;
+  private readonly _currentLocale: Signal<LocaleEnum>;
   private readonly _defaultLocale: LocaleEnum;
-  private readonly _run_id: string;
+  private _run_id = "";
   isLoading = signal(false);
+  callback: any;
 
-  constructor(run_id: string, startTranslationCallback: any) {
+  constructor(callback = undefined) {
     this._languages = [LocaleEnum.en_US, LocaleEnum.fr_FR, LocaleEnum.en_UK];
     this._currentLocale = signal(LocaleEnum.en_US);
     this._localeContents = signal([]);
-    this.startTranslationCallback = startTranslationCallback;
     this._defaultLocale = LocaleEnum.en_US;
-    if (!run_id) {
-      throw new Error('Run id is required !');
-    }
-    this._run_id = run_id;
+    this.callback = callback;
   }
 
   get run_id() {
     return this._run_id;
+  }
+
+  set run_id(runId: string) {
+    this._run_id = runId;
   }
 
   get defaultLocale(): LocaleEnum {
@@ -53,8 +59,12 @@ export class DescriptionModel {
     return this.getLocaleContent(this.currentLocale.value);
   }
 
-  getLocaleContent(locale: LocaleEnum): ReadonlySignal<LocaleContent | undefined> {
-    return computed(() => this._localeContents.value.find((loc) => loc.locale === locale));
+  getLocaleContent(
+    locale: LocaleEnum,
+  ): ReadonlySignal<LocaleContent | undefined> {
+    return computed(() =>
+      this._localeContents.value.find((loc) => loc.locale === locale),
+    );
   }
 
   getBlock(locale: LocaleEnum, block_name: string) {
@@ -64,30 +74,44 @@ export class DescriptionModel {
       );
 
       return localeContent?.getBlock(block_name);
-    })
+    });
   }
 
   addStartChunk(chunk: BlockStartChunk) {
-    console.log('Adding a new block', chunk);
     let localeContent = this.getLocaleContent(chunk.locale).value;
 
     if (!localeContent) {
       localeContent = new LocaleContent(chunk.locale);
-      this._localeContents.value = [...this._localeContents.value, localeContent];
+      this._localeContents.value = [
+        ...this._localeContents.value,
+        localeContent,
+      ];
     }
 
     const existingBlock = localeContent?.getBlock(chunk.name);
     if (existingBlock) {
       localeContent.reset(chunk.name);
+
+      // if the default locale content has changed, remove all translations
+      if (chunk.locale === this.defaultLocale) {
+        this.removeAllTranslations();
+        this.changeLocale(this.defaultLocale);
+      }
     }
 
     localeContent.addStartChunk(chunk);
     this.isLoading.value = true;
   }
 
-  addChunk(chunk: BlockChunk) {
-    console.log('Adding a chunk to block', chunk);
+  private removeAllTranslations() {
+    this._localeContents.value = [
+      ...this._localeContents.value.filter(
+        (content) => content.locale === this.defaultLocale,
+      ),
+    ];
+  }
 
+  addChunk(chunk: BlockChunk) {
     const localeContent = this.getLocaleContent(chunk.locale).value;
     if (!localeContent) {
       throw new BlockNotFoundError(
@@ -97,15 +121,28 @@ export class DescriptionModel {
     localeContent.addChunk(chunk);
   }
 
-  changeLocale(language: LocaleEnum) {
+  changeLocale(
+    language: LocaleEnum,
+    blockName: string | undefined = undefined,
+  ) {
+    if (
+      !this.getLocaleContent(language).value &&
+      language != this.defaultLocale
+    ) {
+      this.translate(language, blockName);
+    }
     this._currentLocale.value = language;
   }
 
-  translate(
+  private translate(
     targetLocale: LocaleEnum,
     block_name: string | undefined = undefined,
   ) {
-    const defaultLocaleContent = this.getLocaleContent(this.defaultLocale).value;
+    const defaultLocaleContent = this.getLocaleContent(
+      this.defaultLocale,
+    ).value;
+
+    this._currentLocale.value = targetLocale;
 
     if (!defaultLocaleContent) {
       throw new TranslationError(
@@ -124,9 +161,9 @@ export class DescriptionModel {
     }
 
     if (block_name) {
-      this.startTranslationCallback(this.run_id, targetLocale, block_name);
+      this.callback(this.run_id, targetLocale, block_name);
     } else {
-      this.startTranslationCallback(this.run_id, targetLocale);
+      this.callback(this.run_id, targetLocale);
     }
   }
 
@@ -136,5 +173,23 @@ export class DescriptionModel {
 
   onContentFinished() {
     this.isLoading.value = false;
+  }
+
+  addBlock(block: Block, locale: LocaleEnum.fr_FR | undefined = undefined) {
+    this.addStartChunk({
+      name: block.name,
+      locale: locale || this.currentLocale.value,
+      level: block.level,
+      display_title: block.displayTitle,
+      is_content_display_title: block.isContentDisplayTitle,
+    });
+
+    this.addChunk({
+      block_name: block.name,
+      locale: locale || this.currentLocale.value,
+      chunk: block.content.value,
+    });
+
+    this.onContentFinished();
   }
 }

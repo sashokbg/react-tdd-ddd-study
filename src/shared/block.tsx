@@ -1,4 +1,5 @@
 import {Block} from "@/model/block";
+import styles from '../styles/block.module.css'
 
 type BlockComponentProps = {
   block: Block
@@ -7,12 +8,14 @@ type BlockComponentProps = {
 export const BlockComponent = (props: BlockComponentProps) => {
 
   return (
-    <>
-      Block:
-
-      {props.block.content.value}
-
-    </>
+    <div className={styles.block}>
+      <div>
+        <b>{props.block.displayTitle}</b>
+      </div>
+      <div className={styles.content}>
+        {props.block.content.value}
+      </div>
+    </div>
   )
 
 }

@@ -1,0 +1,10 @@
+.block {
+
+}
+
+.content {
+   background-color: #F5F5F5;
+   border-radius: 6px;
+   border: 1px lightgray;
+   padding: 0.5rem;
+}
