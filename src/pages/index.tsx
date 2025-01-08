@@ -15,8 +15,8 @@ description.callback = (run_id: string, locale: LocaleEnum, block_name: string) 
 export default function Home() {
   const formRef = useRef<HTMLFormElement>(null)
 
-  const generateContent = () => {
-    generateFakeContent(description)
+  const generateContent = async () => {
+    await generateFakeContent(description);
   }
 
   const changeLocale = () => {

@@ -14,13 +14,19 @@ import {
 } from '@preact/signals-react';
 import { Block } from '@/model/block';
 
+/**
+ * This class is the main aggregate that manages the description of an Article.
+ * It provides operations such as #addChunk, #addStartChunk etc. for adding content to the appropriate blocks.
+ *
+ * The description comprises multiple LocaleContent.
+ */
 export class DescriptionModel {
   private readonly _languages: LocaleEnum[];
   private readonly _localeContents: Signal<LocaleContent[]>;
   private readonly _currentLocale: Signal<LocaleEnum>;
   private readonly _defaultLocale: LocaleEnum;
   private _run_id = "";
-  isLoading = signal(false);
+  private readonly _isLoading = signal(false);
   callback: any;
 
   constructor(callback: any = undefined) {
@@ -29,6 +35,10 @@ export class DescriptionModel {
     this._localeContents = signal([]);
     this._defaultLocale = LocaleEnum.en_US;
     this.callback = callback;
+  }
+
+  get isLoading(): ReadonlySignal {
+    return this._isLoading;
   }
 
   get run_id() {
@@ -78,6 +88,7 @@ export class DescriptionModel {
   }
 
   addStartChunk(chunk: BlockStartChunk) {
+    console.log('Added start block', chunk);
     let localeContent = this.getLocaleContent(chunk.locale).value;
 
     if (!localeContent) {
@@ -100,7 +111,7 @@ export class DescriptionModel {
     }
 
     localeContent.addStartChunk(chunk);
-    this.isLoading.value = true;
+    this._isLoading.value = true;
   }
 
   private removeAllTranslations() {
@@ -112,6 +123,8 @@ export class DescriptionModel {
   }
 
   addChunk(chunk: BlockChunk) {
+    console.log('Added chunk', chunk);
+
     const localeContent = this.getLocaleContent(chunk.locale).value;
     if (!localeContent) {
       throw new BlockNotFoundError(
@@ -172,7 +185,8 @@ export class DescriptionModel {
   }
 
   onContentFinished() {
-    this.isLoading.value = false;
+    console.log('Content finished');
+    this._isLoading.value = false;
   }
 
   addBlock(block: Block, locale: LocaleEnum.fr_FR | undefined = undefined) {
